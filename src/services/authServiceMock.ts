@@ -1,8 +1,15 @@
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = 'socializenow_mozambique_2024_secret_key'
-const JWT_EXPIRES_IN = '7d'
+// Geração simples de token no front apenas para testes (NÃO USAR EM PRODUÇÃO)
+const generateMockToken = (payload: { userId: string; email: string }) => {
+  const data = { ...payload, ts: Date.now() }
+  return btoa(JSON.stringify(data))
+}
+
+const parseMockToken = (token: string): { userId: string; email: string; ts: number } => {
+  const json = atob(token)
+  return JSON.parse(json)
+}
 
 export interface LoginData {
   email: string
@@ -101,12 +108,8 @@ export class AuthService {
       users.push(newUser)
       saveUsers(users)
 
-      // Gera o token JWT
-      const token = jwt.sign(
-        { userId: newUser.id, email: newUser.email },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
-      )
+      // Gera token mock
+      const token = generateMockToken({ userId: newUser.id, email: newUser.email })
 
       // Retorna os dados do usuário (sem senha) e o token
       const { password, ...userWithoutPassword } = newUser
@@ -143,12 +146,8 @@ export class AuthService {
       user.lastSeen = new Date().toISOString()
       saveUsers(users)
 
-      // Gera o token JWT
-      const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
-      )
+      // Gera token mock
+      const token = generateMockToken({ userId: user.id, email: user.email })
 
       // Retorna os dados do usuário (sem senha) e o token
       const { password, ...userWithoutPassword } = user
@@ -161,10 +160,10 @@ export class AuthService {
     }
   }
 
-  // Verifica o token JWT
+  // Verifica o token mock
   static async verifyToken(token: string) {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string }
+      const decoded = parseMockToken(token) as { userId: string; email: string }
       const users = getUsers()
       const user = users.find((u: any) => u.id === decoded.userId)
       
